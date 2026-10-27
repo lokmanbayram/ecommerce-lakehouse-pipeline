@@ -1,0 +1,29 @@
+# Environment variables and secrets
+.env
+*.env.local
+*.pem
+*.key
+
+# Python bytecode and virtual environments
+__pycache__/
+*.py[cod]
+*$py.class
+venv/
+.venv/
+env/
+
+# Local logs and temporary data artifacts
+logs/
+*.log
+data/
+*.parquet
+*.csv
+
+# dbt artifacts
+target/
+dbt_packages/
+
+# IDE and OS specific files
+.vscode/
+.idea/
+.DS_Store
