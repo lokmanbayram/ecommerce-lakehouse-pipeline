@@ -24,3 +24,12 @@ An automated, idempotent, and production-grade data pipeline built on **Medallio
 * **Hive-Style Partitioning:** S3 artifacts are stored hierarchically (e.g., `raw/orders/ingestion_date=YYYY-MM-DD/`) to optimize future big data querying costs (Athena/Spark).
 
 ## 📂 Project Structure
+
+    ├── .github/workflows/pipeline.yml    # CI/CD orchestration configuration
+    ├── dbt_project/                      # dbt models and data quality tests
+    ├── src/
+    │   ├── config.py                     # Centralized environment & secret management
+    │   ├── ingestion/s3_ingestor.py      # Resilient API to S3 Bronze layer extraction
+    │   └── warehouse/postgres_loader.py  # S3 to PostgreSQL Silver layer staging
+    ├── .env.example                      # Template for required environment variables
+    └── requirements.txt                  # Pinned dependencies for reproducible builds
