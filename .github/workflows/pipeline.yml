@@ -1,7 +1,7 @@
 name: Daily Lakehouse Data Pipeline
 
 on:
-  schedule:
+ # schedule:
     # - cron: '0 2 * * *' # Paused to prevent failed runs after AWS infrastructure teardown
   workflow_dispatch: # Allows manual trigger from the GitHub Actions UI
 
