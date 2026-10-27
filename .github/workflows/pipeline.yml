@@ -2,8 +2,8 @@ name: Daily Lakehouse Data Pipeline
 
 on:
   schedule:
-    - cron: '0 2 * * *' # Her gün UTC saatiyle 02:00'de çalışır
-  workflow_dispatch: # GitHub arayüzünden manuel tetiklemeye izin verir
+    # - cron: '0 2 * * *' # Paused to prevent failed runs after AWS infrastructure teardown
+  workflow_dispatch: # Allows manual trigger from the GitHub Actions UI
 
 jobs:
   run-pipeline:
