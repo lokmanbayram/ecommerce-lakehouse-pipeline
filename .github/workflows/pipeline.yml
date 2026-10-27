@@ -1,0 +1,68 @@
+name: Daily Lakehouse Data Pipeline
+
+on:
+  schedule:
+    - cron: '0 2 * * *' # Her gün UTC saatiyle 02:00'de çalışır
+  workflow_dispatch: # GitHub arayüzünden manuel tetiklemeye izin verir
+
+jobs:
+  run-pipeline:
+    runs-on: ubuntu-latest
+
+    env:
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      AWS_REGION: "eu-central-1"
+      S3_BUCKET_NAME: ${{ secrets.S3_BUCKET_NAME }}
+      DB_HOST: ${{ secrets.DB_HOST }}
+      DB_PORT: "5432"
+      DB_NAME: ${{ secrets.DB_NAME }}
+      DB_USER: ${{ secrets.DB_USER }}
+      DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
+      FX_API_BASE_URL: "https://api.frankfurter.app"
+      ECOMMERCE_API_BASE_URL: "https://fakestoreapi.com"
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.10
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+          cache: 'pip'
+
+      - name: Install Python Dependencies
+        run: pip install -r requirements.txt
+
+      - name: Step 1 - Run Bronze Layer Ingestion (API to S3)
+        run: python -m src.ingestion.s3_ingestor
+
+      - name: Step 2 - Run Silver Layer Loader (S3 to PostgreSQL)
+        run: python -m src.warehouse.postgres_loader
+
+      - name: Install dbt-core and Postgres Adapter
+        run: pip install dbt-core==1.8.2 dbt-postgres==1.8.2
+
+      - name: Step 3 - Run Gold Layer Transformations (dbt)
+        working-directory: ./dbt_project
+        run: |
+          mkdir -p ~/.dbt
+          echo "
+          dbt_project:
+            target: dev
+            outputs:
+              dev:
+                type: postgres
+                host: \"$DB_HOST\"
+                user: \"$DB_USER\"
+                password: \"$DB_PASSWORD\"
+                port: 5432
+                dbname: \"$DB_NAME\"
+                schema: analytics
+                threads: 4
+                sslmode: require
+          " > ~/.dbt/profiles.yml
+          dbt deps
+          dbt run
+          dbt test
